@@ -1,0 +1,56 @@
+version: "3.5"
+
+services:
+  # Install postgres and setup the student database.
+  postgres:
+    container_name: debezium-postgres-11
+    image: postgres:11.7
+    # container_name: debezium-postgres
+    # image: debezium/postgres:latest
+    hostname: postgres
+    networks:
+      - debezium
+    ports:
+      - 5432:5432
+    command: postgres -c config_file=/etc/postgresql.conf
+    volumes:
+      - ./volumes/postgresql-data:/var/lib/postgresql/data
+      - ./volumes/postgresql-logs:/logs
+      - ./postgresql.conf:/etc/postgresql.conf
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+
+  # Install Elasticsearch.
+  elasticsearch:
+    container_name: debezium-elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.0
+    hostname: elasticsearch
+    networks:
+      - debezium
+    ports:
+      - 9200:9200
+      - 9300:9300
+    #volumes:
+    #  - ~/volumes/elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+
+  # PgAdmin for accessing postgres
+  pgadmin4:
+    container_name: debezium-pgadmin4
+    image: dpage/pgadmin4:latest
+    hostname: pgadmin4
+    networks:
+      - debezium
+    ports:
+      - 8888:80
+    volumes:
+      - ~/volumes/pgadmin4:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin
+      - PGADMIN_DEFAULT_PASSWORD=admin
+
+networks:
+  debezium:
